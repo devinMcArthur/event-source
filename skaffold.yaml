@@ -1,0 +1,35 @@
+apiVersion: skaffold/v2beta26
+kind: Config
+build:
+  local:
+    push: false # Setting false will not push the image to remote repository
+  tagPolicy:
+    gitCommit: {}
+  artifacts:
+    - image: itsdevin/event-source
+      context: server
+      docker:
+        dockerfile: Dockerfile.dev
+      # Must be using nodemon
+      sync:
+        manual:
+          - src: "**/*.js"
+            dest: .
+          - src: "**/*.ts"
+            dest: .
+# Automatically apply config files, remove them when stopped
+deploy:
+  kubeContext: minikube
+  kubectl:
+    manifests:
+      - k8s/dev/mongo.yaml
+      - k8s/dev/server.yaml
+portForward:
+  - resourceType: Service
+    resourceName: server-cluster-ip-service
+    namespace: default
+    port: 8080
+  - resourceType: Service
+    resourceName: mongo-service
+    namespace: default
+    port: 27017
