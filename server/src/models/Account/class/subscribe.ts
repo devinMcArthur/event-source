@@ -29,7 +29,7 @@ const events = async (Account: AccountModel) => {
     }) as Readable,
     (error) => {
       if (!error) {
-        console.info("Stopping subscription.");
+        console.info("Stopping subscription for an unknown reason");
         return;
       }
       console.error(`Received error: ${error ?? "UNEXPECTED ERROR"}.`);

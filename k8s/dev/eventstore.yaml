@@ -1,0 +1,94 @@
+# https://github.com/paralect/cqrs-cluser/blob/master/k8s/eventstore.yaml
+kind: Service
+apiVersion: v1
+metadata:
+  name: eventstore
+spec:
+  clusterIP: None
+  selector:
+    name: eventstore-node
+  ports:
+    - name: "internal-http"
+      protocol: TCP
+      port: 2113
+      targetPort: 2113
+    - name: "external-http"
+      protocol: TCP
+      port: 2114
+      targetPort: 2114
+    - name: "external-tcp"
+      protocol: TCP
+      port: 1113
+      targetPort: 1113
+    - name: "internal-tcp"
+      protocol: TCP
+      port: 1112
+      targetPort: 1112
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: eventstore
+spec:
+  selector:
+    matchLabels:
+      name: eventstore-node
+  serviceName: eventstore
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: eventstore-node
+        app: eventstore
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: eventstore-node
+          image: eventstore/eventstore
+          ports:
+            - containerPort: 2113
+            - containerPort: 2114
+            - containerPort: 1113
+            - containerPort: 1112
+          env:
+            - name: EVENTSTORE_CLUSTER_SIZE
+              value: "1"
+            - name: EVENTSTORE_CLUSTER_GOSSIP_PORT
+              value: "2113"
+            - name: EVENTSTORE_CLUSTER_DNS
+              value: "eventstore.default.svc.cluster.local"
+            - name: EVENTSTORE_INT_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: EVENTSTORE_EXT_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: EVENTSTORE_CLUSTER_SIZE
+              value: "1"
+            - name: EVENTSTORE_RUN_PROJECTIONS
+              value: "All"
+            - name: EVENTSTORE_START_STANDARD_PROJECTIONS
+              value: "true"
+            - name: EVENTSTORE_EXT_TCP_PORT
+              value: "1113"
+            - name: EVENTSTORE_HTTP_PORT
+              value: "2113"
+            - name: EVENTSTORE_INSECURE
+              value: "true"
+            - name: EVENTSTORE_ENABLE_EXTERNAL_TCP
+              value: "true"
+            - name: EVENTSTORE_GOSSIP_ALLOWED_DIFFERENCE_MS
+              value: "600000"
+          volumeMounts:
+            - name: es-persistent-storage
+              mountPath: /data/es
+  volumeClaimTemplates:
+    - metadata:
+        name: es-persistent-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

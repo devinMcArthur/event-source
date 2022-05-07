@@ -13,11 +13,10 @@ import {
 } from "./events";
 
 export class AccountEvent {
-  accountId: string;
   streamName: string;
   eventStore: Client;
 
-  constructor(accountId: string) {
+  constructor(public accountId: string) {
     this.accountId = accountId;
     this.streamName = `account-${accountId}`;
     this.eventStore = eventStoreClient;

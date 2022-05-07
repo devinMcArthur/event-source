@@ -20,8 +20,6 @@ const event = (
 
   const { event } = resolvedEvent;
 
-  console.log(event);
-
   switch (event.type) {
     case AccountEventTypes.Created: {
       return Account.projectCreation(event, Number(event.revision));

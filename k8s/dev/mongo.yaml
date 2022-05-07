@@ -1,57 +1,60 @@
-# https://kubernetes.io/blog/2017/01/running-mongodb-on-kubernetes-with-statefulsets/
+# https://www.cloudytuts.com/guides/kubernetes/how-to-deploy-mongodb-on-kubernetes/
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-service
-  labels:
-    app: mongo
+  name: mongodb
 spec:
+  selector:
+    app: mongodb
   ports:
     - port: 27017
       targetPort: 27017
-      name: transport
-  clusterIP: None
-  selector:
-    role: mongo
+      protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pv-claim
+  labels:
+    app: mongodb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: mongod
+  name: mongodb
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      role: mongo
-  serviceName: mongo-service
-  replicas: 1
+      app: mongodb
   template:
     metadata:
       labels:
-        replicaset: MainRepSet
-        role: mongo
-        environment: test
+        app: mongodb
     spec:
-      terminationGracePeriodSeconds: 10
       containers:
-        - name: mongod-container
-          image: mongo
-          command:
-            - mongod
-            - "--replSet"
-            - rs0
+        - name: mongodb
+          image: mongo:4.4.0-bionic
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1000Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2000Mi"
           ports:
             - containerPort: 27017
           volumeMounts:
-            - name: mongo-persistent-storage
+            - name: mongodb-persistent-storage
               mountPath: /data/db
-  volumeClaimTemplates:
-    - metadata:
-        name: mongo-persistent-storage
-        annotations:
-          volume.beta.kubernetes.io/storage-class: "standard"
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
+      volumes:
+        - name: mongodb-persistent-storage
+          persistentVolumeClaim:
+            claimName: mongodb-pv-claim

@@ -17,7 +17,7 @@ const main = async () => {
 
   try {
     if (process.env.NODE_ENV !== "test" && process.env.MONGO_URI) {
-      await mongoose.connect("mongodb://localhost:27017/event-source", {
+      await mongoose.connect("mongodb://mongodb:27017/event-source", {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       });

@@ -23,6 +23,7 @@ deploy:
   kubectl:
     manifests:
       - k8s/dev/mongo.yaml
+      - k8s/dev/eventstore.yaml
       - k8s/dev/server.yaml
 portForward:
   - resourceType: Service
@@ -30,6 +31,14 @@ portForward:
     namespace: default
     port: 8080
   - resourceType: Service
-    resourceName: mongo-service
+    resourceName: mongodb
     namespace: default
     port: 27017
+  - resourceType: Service
+    resourceName: eventstore
+    namespace: default
+    port: 2113
+  - resourceType: Service
+    resourceName: eventstore
+    namespace: default
+    port: 1113
