@@ -34,3 +34,17 @@ export type CheckpointModel = ReturnModelType<typeof CheckpointClass>;
 export const Checkpoint = getModelForClass(CheckpointClass, {
   schemaOptions: { collection: "checkpoints" },
 });
+
+/**
+ * ----- Office -----
+ */
+
+import { OfficeClass } from "./Office/class";
+
+export type OfficeDocument = DocumentType<OfficeClass>;
+
+export type OfficeModel = ReturnModelType<typeof OfficeClass>;
+
+export const Office = getModelForClass(OfficeClass, {
+  schemaOptions: { collection: "offices" },
+});
